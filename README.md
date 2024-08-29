@@ -1,6 +1,6 @@
-# Estrutura Dados II
+# Estrutura Dados II CC6M
 
-Este repositório é um **fork** do repositório original do professor [Gustavo Nunes] utilizado na disciplina de **Estrutura de Dados II**. 
+Este repositório é um **fork** do repositório original do professor Gustavo Nunes utilizado na disciplina de **Estrutura de Dados II** na Universidade Vila Velha. 
 
 ## Propósito
 
