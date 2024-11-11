@@ -1,0 +1,137 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+// Estrutura do nó da Treap com chave, prioridade, filho esquerdo e direito
+typedef struct NoTreap {
+    int chave;
+    int prioridade;
+    struct NoTreap *esquerda, *direita;
+} NoTreap;
+
+// Função para criar um novo nó na Treap
+NoTreap *criarNo(int chave) {
+    NoTreap *novoNo = (NoTreap *)malloc(sizeof(NoTreap));
+    if (!novoNo) {
+        printf("Erro: Falha ao alocar memória para o novo nó.\n");
+        exit(-1);
+    }
+    novoNo->chave = chave;
+    novoNo->prioridade = rand() % 100;  // Prioridade aleatória
+    novoNo->esquerda = novoNo->direita = NULL;
+    return novoNo;
+}
+
+// Função de rotação à direita
+NoTreap *rotacaoDireita(NoTreap *no) {
+    NoTreap *novaRaiz = no->esquerda;
+    no->esquerda = novaRaiz->direita;
+    novaRaiz->direita = no;
+    return novaRaiz;
+}
+
+// Função de rotação à esquerda
+NoTreap *rotacaoEsquerda(NoTreap *no) {
+    NoTreap *novaRaiz = no->direita;
+    no->direita = novaRaiz->esquerda;
+    novaRaiz->esquerda = no;
+    return novaRaiz;
+}
+
+// Função para inserir um nó na Treap
+NoTreap *inserir(NoTreap *raiz, int chave) {
+    if (!raiz) 
+        return criarNo(chave);
+
+    if (chave < raiz->chave) {
+        raiz->esquerda = inserir(raiz->esquerda, chave);
+        if (raiz->esquerda->prioridade > raiz->prioridade)
+            raiz = rotacaoDireita(raiz);
+    } else if (chave > raiz->chave) {
+        raiz->direita = inserir(raiz->direita, chave);
+        if (raiz->direita->prioridade > raiz->prioridade)
+            raiz = rotacaoEsquerda(raiz);
+    }
+
+    return raiz;
+}
+
+// Função para excluir um nó da Treap
+NoTreap *excluir(NoTreap *raiz, int chave) {
+    if (!raiz) 
+        return NULL;
+
+    if (chave < raiz->chave) {
+        raiz->esquerda = excluir(raiz->esquerda, chave);
+    } else if (chave > raiz->chave) {
+        raiz->direita = excluir(raiz->direita, chave);
+    } else {
+        if (!raiz->esquerda) {
+            NoTreap *temp = raiz->direita;
+            free(raiz);
+            return temp;
+        } else if (!raiz->direita) {
+            NoTreap *temp = raiz->esquerda;
+            free(raiz);
+            return temp;
+        }
+
+        if (raiz->esquerda->prioridade < raiz->direita->prioridade) {
+            raiz = rotacaoEsquerda(raiz);
+            raiz->esquerda = excluir(raiz->esquerda, chave);
+        } else {
+            raiz = rotacaoDireita(raiz);
+            raiz->direita = excluir(raiz->direita, chave);
+        }
+    }
+
+    return raiz;
+}
+
+// Função para buscar uma chave na Treap
+NoTreap *buscar(NoTreap *raiz, int chave) {
+    if (!raiz || raiz->chave == chave)
+        return raiz;
+
+    if (chave < raiz->chave)
+        return buscar(raiz->esquerda, chave);
+    else
+        return buscar(raiz->direita, chave);
+}
+
+// Função para imprimir a Treap em pré-ordem
+void imprimirPreOrdem(NoTreap *raiz) {
+    if (raiz) {
+        printf("Chave: %d, Prioridade: %d\n", raiz->chave, raiz->prioridade);
+        imprimirPreOrdem(raiz->esquerda);
+        imprimirPreOrdem(raiz->direita);
+    }
+}
+
+// Função principal para testar a Treap
+int main() {
+    srand(time(0)); // Inicializa a semente para a geração de prioridade aleatória
+
+    NoTreap *raiz = NULL;
+    int chaves[] = {50, 30, 20, 40, 70, 60, 80};
+    int n = sizeof(chaves) / sizeof(chaves[0]);
+
+    for (int i = 0; i < n; i++)
+        raiz = inserir(raiz, chaves[i]);
+
+    printf("Treap em pré-ordem:\n");
+    imprimirPreOrdem(raiz);
+
+    int chaveParaBuscar = 60;
+    NoTreap *resultadoBusca = buscar(raiz, chaveParaBuscar);
+    if (resultadoBusca)
+        printf("\nChave %d encontrada com prioridade %d.\n", resultadoBusca->chave, resultadoBusca->prioridade);
+    else
+        printf("\nChave %d não encontrada na Treap.\n", chaveParaBuscar);
+
+    printf("\nExcluindo chave 50:\n");
+    raiz = excluir(raiz, 50);
+    imprimirPreOrdem(raiz);
+
+    return 0;
+}
